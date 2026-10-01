@@ -684,27 +684,27 @@ def _reduce(stack, lookahead):
 
 def tokenize(s):
     tokens = []
-    t = Token()
+    start: int = -1
 
-    def end_token(end):
-        nonlocal t
-        if t.value:
+    def end_token(end: int) -> None:
+        nonlocal start
+        if start >= 0:
+            t = Token()
+            t.value = s[start : end + 1]
+            t.start = start
             t.end = end + 1
             tokens.append(t)
-        t = Token()
+        start = -1
 
     for idx, c in enumerate(s):
         if c in RESERVED:
             end_token(idx - 1)
-            t.start = idx
-            t.value = c
+            start = idx
             end_token(idx)
         elif c in (" ", "\t", "\n", "\r"):
             end_token(idx - 1)
-        else:
-            if not t.value:
-                t.start = idx
-            t.value += c
+        elif start < 0:
+            start = idx
 
     end_token(len(s) - 1)
     return tokens
@@ -712,13 +712,8 @@ def tokenize(s):
 
 def create_ast(tokens, *, allow_unknown=False):
     stack = []
-    while tokens:
-        t = tokens.pop(0)
-
-        if tokens:
-            lookahead = tokens[0]
-        else:
-            lookahead = None
+    for i, t in enumerate(tokens):
+        lookahead = tokens[i + 1] if i + 1 < len(tokens) else None
 
         stack.append(t)
         _reduce(stack, lookahead)

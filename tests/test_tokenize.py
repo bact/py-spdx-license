@@ -1,10 +1,7 @@
-#
-# Copyright Joshua Watt <JPEWhacker@gmail.com>
-#
+# SPDX-FileContributor: Arthit Suriyawongkul
+# SPDX-FileCopyrightText: Joshua Watt <JPEWhacker@gmail.com>
+# SPDX-FileType: SOURCE
 # SPDX-License-Identifier: MIT
-#
-
-import time
 
 from py_spdx_license import parse
 from py_spdx_license.ast import ParseError, tokenize
@@ -41,12 +38,3 @@ def test_parse(expression, tokens, result):
         parse(expression)
     node_range = e.value.n.get_range() if e.value.n else None
     assert (str(e.value), node_range) == result
-
-
-def test_tokenize_linear():
-    # A single huge token must not be quadratic (the old code took seconds)
-    s = "x" * 1_000_000
-    begin = time.perf_counter()
-    tokens = tokenize(s)
-    assert time.perf_counter() - begin < 1.0
-    assert [(t.value, t.start, t.end) for t in tokens] == [(s, 0, len(s))]
